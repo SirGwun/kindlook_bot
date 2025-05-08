@@ -25,6 +25,11 @@ public class PhraseButton extends Button {
 
     }
 
+    @Override
+    public String getText() {
+        return text;
+    }
+
     public void setPhraseList(List<Phrase> phraseList) {
         this.phraseList = phraseList;
     }

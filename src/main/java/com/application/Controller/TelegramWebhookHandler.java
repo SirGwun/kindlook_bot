@@ -1,71 +1,64 @@
 package com.application.Controller;
 
-import com.application.HttpsTelegramServer;
-import com.application.Model.Button;
 import com.application.Model.User;
-import com.application.serves.Manager;
+import com.application.serves.DBProxy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
 import java.io.IOException;
-import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class TelegramWebhookHandler implements HttpHandler {
     private final ObjectMapper objectMapper = new ObjectMapper();
+
     @Override
     public void handle(HttpExchange exchange) throws IOException {
         if (!"POST".equals(exchange.getRequestMethod())) {
-            exchange.sendResponseHeaders(405, -1); // 405 Method Not Allowed
-            System.out.println("работает функция handle, метод не POST");
+            exchange.sendResponseHeaders(405, -1);
             return;
         }
-        System.out.println("работает функция handle");
-        // 2. Читаем тело запроса (JSON от Telegram)
-        InputStream requestBody = exchange.getRequestBody();
 
-        String body = new Scanner(requestBody, StandardCharsets.UTF_8).useDelimiter("\\A").next();
+        String body;
+        try (Scanner scanner = new Scanner(exchange.getRequestBody(), StandardCharsets.UTF_8).useDelimiter("\\A")) {
+            body = scanner.hasNext() ? scanner.next() : "";
+        }
+
         JsonNode node = objectMapper.readTree(body);
-        String chatID = node.path("message").path("chat").path("id").asText();
-        String message = node.path("message").path("text").asText();
-        String userName = node.path("message").path("from").path("username").asText();
+        processNode(node);
 
-        if (message.startsWith("/")) {
-            commandHandler(message, chatID);
-        } else {
-            System.out.println("Пришло обновление от: " + chatID + " - " + userName);
-            System.out.println("Текст: " + message);
-            User user = new User(Long.parseLong(chatID), userName);
-
-            Manager phraseManager = Manager.getInstance();
-//            Phrase phrase = phraseManager.getNextPhrase(button, user);
-//
-//            HttpsTelegramServer.sendMessage(phrase.getText());
+        try {
+            System.out.println("Пришло сообщение от: " + node.path("message").path("from").path("username").asText());
+            System.out.println(node.path("message").path("text").asText());
+        } catch (NumberFormatException e) {
+            System.out.println("Не удалось рапспарсить сообщение в отладочной вставке");
         }
 
         String response = "OK";
         exchange.sendResponseHeaders(200, response.length());
-        exchange.getResponseBody().write(response.getBytes());
-        exchange.close();
+        try (exchange; OutputStream os = exchange.getResponseBody()) {
+            os.write(response.getBytes());
+        }
     }
 
-    private void commandHandler(String message, String chatID) {
-        String[] command = message.split(" ");
-
-        switch (command[0]) {
-            case "/start": {
-                try {
-                    HttpsTelegramServer.sendInlineKeyboard(chatID);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-            default: {
-                HttpsTelegramServer.sendMessage("Неизвестная команда");
-            }
+    private void processNode(JsonNode node) {
+        if (node.has("callback_query")) {
+            ButtonHandler.handle(node);
+        } else {
+            CommandHandler.handle(node);
         }
+    }
+
+    private static User getOrCreateUser(long id, String userName) throws SQLException {
+        User user = DBProxy.getUser(id);
+        if (user == null) {
+            user = new User(id, userName);
+            DBProxy.addUser(user);
+        }
+        return user;
     }
 }

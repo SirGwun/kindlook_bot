@@ -36,7 +36,7 @@ public class DBProxy {
         }
     }
 
-    public static void addUser(User user) {
+    public static void addUser(User user) throws SQLException {
         conn = connect();
         if (getUser(user.getId()) != null) {
             Main.log("Этот пользователь уже добавлен");
@@ -45,13 +45,11 @@ public class DBProxy {
             try (Statement statement = conn.createStatement()) {
                 statement.executeUpdate(sql);
                 System.out.println(user);
-            } catch (SQLException e) {
-                e.printStackTrace();
             }
         }
     }
 
-    public static User getUser(long id) {
+    public static User getUser(long id) throws SQLException {
         conn = connect();
         String sql = "SELECT id, name FROM Users WHERE id = ?";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
@@ -61,15 +59,13 @@ public class DBProxy {
                     return new User(resultSet.getInt("id"), resultSet.getString("name"));
                 }
             }
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
         return null;
     }
 
     public static void createPhrasesTable() throws SQLException {
         conn = connect();
-        String sql = "CREATE TABLE IF NOT EXISTS Phrases (id INT PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)";
+        String sql = "CREATE TABLE IF NOT EXISTS Phrases (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)";
         try (Statement statement = conn.createStatement()) {
             statement.executeUpdate(sql);
             System.out.println("Phrases table создана");
@@ -143,6 +139,7 @@ public class DBProxy {
         String sql = "CREATE TABLE IF NOT EXISTS sentPhrases (userId INT, phraseId INT)";
         try (Statement statement = conn.createStatement()) {
             statement.executeUpdate(sql);
+            Main.log("sentPhrases table создана");
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -154,12 +151,40 @@ public class DBProxy {
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
             statement.setLong(1, user.getId());
             statement.setInt(2, phrase.getId());
+            statement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
             return false;
         }
         return true;
     }
+
+
+    public static void resetSendedPhrases(User user, List<Phrase> phraseList) {
+        if (phraseList == null || phraseList.isEmpty()) return;
+
+        conn = connect();
+
+        StringBuilder sql = new StringBuilder("DELETE FROM sentPhrases WHERE userId = ? AND phraseId IN (");
+        for (int i = 0; i < phraseList.size(); i++) {
+            sql.append("?");
+            if (i < phraseList.size() - 1) {
+                sql.append(", ");
+            }
+        }
+        sql.append(")");
+
+        try (PreparedStatement statement = conn.prepareStatement(sql.toString())) {
+            statement.setLong(1, user.getId());
+            for (int i = 0; i < phraseList.size(); i++) {
+                statement.setInt(i + 2, phraseList.get(i).getId());
+            }
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     public static List<Integer> getSentPhraseId(User user) {
         conn = connect();

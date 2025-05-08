@@ -20,6 +20,11 @@ public class TopLevelButton extends Button {
         return id;
     }
 
+    @Override
+    public String getText() {
+        return text;
+    }
+
     public List<Button> getSubButtonList() {
         return subButtonList;
     }

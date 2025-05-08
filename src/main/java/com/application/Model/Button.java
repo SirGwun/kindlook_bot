@@ -7,4 +7,5 @@ import java.util.List;
 public abstract class Button {
 
     public abstract int getId();
+    public abstract String getText();
 }

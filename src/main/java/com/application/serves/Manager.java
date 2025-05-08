@@ -2,23 +2,26 @@ package com.application.serves;
 
 import com.application.Model.*;
 
+import java.sql.SQLException;
 import java.util.*;
 
 public class Manager {
     private static final Random RANDOM = new Random();
     private final static Manager MANAGER = new Manager();
-    private static int id = -1;
-    private final List<User> users = new ArrayList<>();
+    private static int currentButtonId = 0;
     List<Button> buttonTree = new ArrayList<>();
     List<Phrase> phraseList = new ArrayList<>();
+
+    private static final String START_MESSAGE = "Стартовое сообщение";
+    private static final String UNKNOWN_MESSAGE = "Сообщение на неопознанную команду или текст";
+
 
     private Manager() {
         init();
     }
 
     public static int getNextId() {
-        id += 1;
-        return id;
+        return currentButtonId++;
     }
 
     public void init() {
@@ -31,19 +34,23 @@ public class Manager {
         return MANAGER;
     }
 
-    public Button findButton(int buttonId, List<Button> bTree) {
+    public Optional<Button> findButton(int buttonId) {
+        return findButton(buttonId, buttonTree);
+    }
+
+    private Optional<Button> findButton(int buttonId, List<Button> bTree) {
         for (Button button : bTree) {
             if (button.getId() == buttonId) {
-                return button;
+                return Optional.of(button);
             }
             if (button instanceof TopLevelButton) {
-                Button foundButton = findButton(buttonId, ((TopLevelButton) button).getSubButtonList());
-                if (foundButton != null) {
+                Optional<Button> foundButton = findButton(buttonId, ((TopLevelButton) button).getSubButtonList());
+                if (foundButton.isPresent()) {
                     return foundButton;
                 }
             }
         }
-        return null;
+        return Optional.empty();
     }
 
     public void extractPhrases(List<Button> buttonTree) {
@@ -56,18 +63,18 @@ public class Manager {
         }
     }
 
-    public Phrase getNextPhrase(int buttonId, long userId) {
-        Button button = findButton(buttonId, buttonTree);
-        if (button instanceof TopLevelButton || button == null) {
-            throw new IllegalArgumentException();
+    public Phrase getNextPhrase(int buttonId, long userId) throws SQLException {
+        Button button = findButton(buttonId).orElseThrow(() -> new IllegalArgumentException("Button not found"));
+        if (button instanceof TopLevelButton) {
+            throw new IllegalArgumentException("TopLevelButton cannot be used for phrases");
         }
         PhraseButton pButton = (PhraseButton) button;
         User user = DBProxy.getUser(userId);
         if (user == null) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("User not found");
         }
 
-        List<Integer> sentPhrases = DBProxy.getSentPhraseId(user);
+        Set<Integer> sentPhrases = new HashSet<>(DBProxy.getSentPhraseId(user));
         List<Phrase> availablePhrases = new ArrayList<>();
         for (Phrase phrase : pButton.getPhraseList()) {
             if (!sentPhrases.contains(phrase.getId())) {
@@ -75,12 +82,28 @@ public class Manager {
             }
         }
         if (availablePhrases.isEmpty()) {
-            return null;
+            availablePhrases = pButton.getPhraseList();
+            DBProxy.resetSendedPhrases(user, pButton.getPhraseList());
         }
-        Phrase answer = availablePhrases.get(RANDOM.nextInt(0, availablePhrases.size()));
-
-        user.addSendedPhrase(answer);
+        Phrase answer;
+        try {
+            answer = availablePhrases.get(RANDOM.nextInt(availablePhrases.size()));
+        } catch (IllegalArgumentException e) {
+            return new Phrase("Упс, все закончилось");
+        }
+        DBProxy.addSentPhrase(user, answer);
         return answer;
     }
 
+    public List<Button> getRootList() {
+        return buttonTree;
+    }
+
+    public String getStartMessage() {
+        return START_MESSAGE;
+    }
+
+    public String getUnknownMessage() {
+        return UNKNOWN_MESSAGE;
+    }
 }
