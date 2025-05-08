@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 public class BroadcastService {
@@ -36,7 +37,9 @@ public class BroadcastService {
     }
     boolean hasBroadcastBeenSentToday(LocalDate date); // Проверяет, была ли рассылка сегодня
     void markBroadcastAsSent(LocalDate date); // Отмечает, что рассылка выполнена
-    LocalDate getTodayAtOffset(ZoneOffset offset); // Возвращает дату с учётом смещения UTC+3
+    public LocalDate getTodayAtOffset(ZoneOffset offset) {
+        return ZonedDateTime.now(ZoneOffset.UTC).withZoneSameInstant(offset).toLocalDate();
+    }
 
     private Phrase getTodayPhrase() throws SQLException {
         if (root == null) {
