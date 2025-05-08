@@ -12,5 +12,6 @@ public class TelegramBotAPI {
         } else {
             HttpsTelegramServer.sendMessage(user, phrase.getText());
         }
+        return true;
     }
 }
