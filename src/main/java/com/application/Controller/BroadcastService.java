@@ -10,18 +10,51 @@ import com.application.serves.Manager;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.ZoneOffset;
-import java.time.ZonedDateTime;
+import java.time.*;
 import java.util.List;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static com.application.serves.DBProxy.addBroadcastMark;
+import static com.application.serves.DBProxy.getBroadcastMark;
 
 public class BroadcastService {
     private static final User GLOBAL_USER = new User(-1, "GLOBAL");
     PhraseButton root;
     TelegramBotAPI api = new TelegramBotAPI();
-    void startBroadcastScheduler(); // Запуск всей логики при старте бота
-    long computeInitialDelayUntilNextBroadcast(ZoneOffset offset, LocalTime targetTime);
+    public void startBroadcastScheduler() {
+        ZoneOffset offset = ZoneOffset.of("+3");
+        LocalTime targetTime = LocalTime.of(12, 0);
+        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
+
+        long initialDelay = computeInitialDelayUntilNextBroadcast(offset, targetTime);
+
+        scheduler.scheduleAtFixedRate(() -> {
+            LocalDate today = getTodayAtOffset(offset);
+            if (!getBroadcastMark(today)) {
+                sendBroadcastToAllUsers();
+                addBroadcastMark(today);
+            }
+        }, initialDelay, Duration.ofDays(1).toMillis(), TimeUnit.MILLISECONDS);
+    }
+
+
+    public long computeInitialDelayUntilNextBroadcast(ZoneOffset offset, LocalTime targetTime) {
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC).withZoneSameInstant(offset);
+        ZonedDateTime nextBroadcast = now.withHour(targetTime.getHour())
+                .withMinute(targetTime.getMinute())
+                .withSecond(0)
+                .withNano(0);
+
+        if (now.isAfter(nextBroadcast)) {
+            nextBroadcast = nextBroadcast.plusDays(1);
+        }
+
+        Duration delay = Duration.between(now, nextBroadcast);
+        return delay.toMillis();
+    }
+
     private void sendBroadcastToAllUsers() {
         try {
             List<User> userList = DBProxy.getUsers();
@@ -35,9 +68,11 @@ public class BroadcastService {
             Main.log(e.getMessage());
         }
     }
-    boolean hasBroadcastBeenSentToday(LocalDate date); // Проверяет, была ли рассылка сегодня
+    boolean hasBroadcastBeenSentToday(LocalDate date) {
+        return getBroadcastMark(date);
+    }
     void markBroadcastAsSent(LocalDate date) {
-        DBProxy.addBrodcastMark(date);
+        addBroadcastMark(date);
     }
     public LocalDate getTodayAtOffset(ZoneOffset offset) {
         return ZonedDateTime.now(ZoneOffset.UTC).withZoneSameInstant(offset).toLocalDate();
