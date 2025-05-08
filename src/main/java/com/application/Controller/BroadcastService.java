@@ -36,7 +36,9 @@ public class BroadcastService {
         }
     }
     boolean hasBroadcastBeenSentToday(LocalDate date); // Проверяет, была ли рассылка сегодня
-    void markBroadcastAsSent(LocalDate date); // Отмечает, что рассылка выполнена
+    void markBroadcastAsSent(LocalDate date) {
+        DBProxy.addBrodcastMark(date);
+    }
     public LocalDate getTodayAtOffset(ZoneOffset offset) {
         return ZonedDateTime.now(ZoneOffset.UTC).withZoneSameInstant(offset).toLocalDate();
     }

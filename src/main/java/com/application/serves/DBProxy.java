@@ -6,6 +6,7 @@ import com.application.Model.User;
 
 import java.sql.*;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.*;
 
 public class DBProxy {
@@ -219,5 +220,41 @@ public class DBProxy {
             e.printStackTrace();
         }
         return ids;
+    }
+
+    public static void createBroadcastTable() {
+        conn = connect();
+        String sql = "CREATE TABLE IF NOT EXISTS broadcasts (date TEXT PRIMARY KEY)";
+        try (Statement statement = conn.createStatement()) {
+            statement.executeUpdate(sql);
+            Main.log("broadcasts table создана");
+        } catch (SQLException e) {
+            Main.log(e.getMessage());
+        }
+    }
+
+    public static void addBroadcastMark(LocalDate date) {
+        conn = connect();
+        String sql = "INSERT OR IGNORE INTO broadcasts (date) VALUES(?)";
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setString(1, date.toString());
+            statement.executeUpdate();
+        } catch (SQLException e) {
+            Main.log(e.getMessage());
+        }
+    }
+
+    public static boolean getBroadcastMark(LocalDate date) {
+        conn = connect();
+        String sql = "SELECT 1 FROM broadcasts WHERE date = ?";
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            statement.setString(1, date.toString());
+            try (ResultSet rs = statement.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            Main.log(e.getMessage());
+        }
+        return false;
     }
 }
