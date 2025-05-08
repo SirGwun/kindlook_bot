@@ -46,10 +46,10 @@ public class SubChecker {
 
 
     public static String getShortSubText() {
-        return "Нет подписки не группу ***";
+        return "Нет подписки не группу " + Main.getDotenv().get("CHANNEL_NAME");
     }
 
     public static String getSubText() {
-        return "Подпишитесь на группу ***";
+        return "Подпишитесь на группу " + Main.getDotenv().get("CHANNEL_NAME");
     }
 }

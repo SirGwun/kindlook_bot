@@ -23,14 +23,13 @@ public class ButtonHandler {
         String callbackId = query.path("id").asText();
 
         try {
-            HttpsTelegramServer.answerCallbackQuery(callbackId, "Принято", false);
             User user = getOrCreateUser(id, userName);
 
             if (!SubChecker.isThisUserSubscribed(user)) {
                 handleUnsubscribedUser(user, callbackId);
                 return;
             }
-
+            HttpsTelegramServer.answerCallbackQuery(callbackId, "Принято", false);
             handleSubscribedUser(user, query);
         } catch (SQLException e) {
             Main.log("Failed to get user from SQL: " + id);
