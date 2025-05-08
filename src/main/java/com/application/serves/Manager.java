@@ -63,8 +63,7 @@ public class Manager {
         }
     }
 
-    public Phrase getNextPhrase(int buttonId, long userId) throws SQLException {
-        Button button = findButton(buttonId).orElseThrow(() -> new IllegalArgumentException("Button not found"));
+    public Phrase getNextPhrase(Button button, long userId) throws SQLException {
         if (button instanceof TopLevelButton) {
             throw new IllegalArgumentException("TopLevelButton cannot be used for phrases");
         }

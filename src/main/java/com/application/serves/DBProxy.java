@@ -63,6 +63,20 @@ public class DBProxy {
         return null;
     }
 
+    public static List<User> getUsers() throws SQLException {
+        conn = connect();
+        String sql = "SELECT id, name FROM Users";
+        List<User> users = new ArrayList<>();
+        try (PreparedStatement statement = conn.prepareStatement(sql)) {
+            try (ResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    users.add(new User(resultSet.getInt("id"), resultSet.getString("name")));
+                }
+            }
+        }
+        return users;
+    }
+
     public static void createPhrasesTable() throws SQLException {
         conn = connect();
         String sql = "CREATE TABLE IF NOT EXISTS Phrases (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)";
