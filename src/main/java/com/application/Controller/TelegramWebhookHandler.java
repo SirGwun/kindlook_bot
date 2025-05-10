@@ -43,7 +43,7 @@ public class TelegramWebhookHandler implements HttpHandler {
         try (exchange; OutputStream os = exchange.getResponseBody()) {
             os.write(response.getBytes());
         }
-    }
+     }
 
     private void processNode(JsonNode node) {
         if (node.has("callback_query")) {

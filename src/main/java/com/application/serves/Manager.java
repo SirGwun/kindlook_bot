@@ -1,5 +1,6 @@
 package com.application.serves;
 
+import com.application.Main;
 import com.application.Model.*;
 
 import java.sql.SQLException;
@@ -63,14 +64,14 @@ public class Manager {
         }
     }
 
-    public Phrase getNextPhrase(Button button, long userId) throws SQLException {
+    public Phrase getNextPhrase(Button button, User user) throws SQLException {
         if (button instanceof TopLevelButton) {
             throw new IllegalArgumentException("TopLevelButton cannot be used for phrases");
         }
         PhraseButton pButton = (PhraseButton) button;
-        User user = DBProxy.getUser(userId);
-        if (user == null) {
-            throw new IllegalArgumentException("User not found");
+
+        if (DBProxy.getUser(user.getId()) == null) {
+            DBProxy.addUser(user);
         }
 
         Set<Integer> sentPhrases = new HashSet<>(DBProxy.getSentPhraseId(user));

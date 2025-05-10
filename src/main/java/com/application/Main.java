@@ -1,5 +1,6 @@
 package com.application;
 
+import com.application.Controller.BroadcastService;
 import com.application.serves.DBProxy;
 import com.application.serves.Manager;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -23,6 +24,9 @@ public class Main {
             Manager.getInstance();
             server = new HttpsTelegramServer();
             server.start();
+
+            BroadcastService service = new BroadcastService();
+            service.startBroadcastScheduler();
         } catch (UnrecoverableKeyException e) {
             log("Невозможно восстановить ключ из хранилища: " + e.getMessage(), Level.SEVERE);
         } catch (CertificateException e) {

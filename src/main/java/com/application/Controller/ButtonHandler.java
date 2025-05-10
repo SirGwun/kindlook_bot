@@ -75,7 +75,7 @@ public class ButtonHandler {
             try {
                 Phrase phrase = Manager.getInstance().getNextPhrase(
                         Manager.getInstance().findButton(button.getId()).orElseThrow(()
-                                -> new IllegalArgumentException("Button not found")), user.getId());
+                                -> new IllegalArgumentException("Button not found")), user);
                 text = phrase != null ? phrase.getText() : "Фразы закончились.";
                 if (phrase.getImagePaths() != null && !phrase.getImagePaths().isEmpty()) {
                     HttpsTelegramServer.sendMessageWithImages(user, text, phrase.getImagePaths());
