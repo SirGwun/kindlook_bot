@@ -244,7 +244,7 @@ public class DBProxy {
         }
     }
 
-    public static boolean getBroadcastMark(LocalDate date) throws SQLException {
+    public static boolean getBroadcastMark(LocalDate date) {
         conn = connect();
         String sql = "SELECT 1 FROM broadcasts WHERE date = ?";
         try (PreparedStatement statement = conn.prepareStatement(sql)) {
