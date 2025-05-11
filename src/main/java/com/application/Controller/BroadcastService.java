@@ -9,6 +9,7 @@ import com.application.serves.DBProxy;
 import com.application.serves.Manager;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.*;
 import java.util.List;
@@ -98,7 +99,7 @@ public class BroadcastService {
     }
 
     private void loadPhrases() {
-        ButtonXmlLoader loader = new ButtonXmlLoader("broadcastData.xml");
+        ButtonXmlLoader loader = new ButtonXmlLoader(Paths.get("data" ,"broadcastData.xml"));
         List<Button> phrases = loader.loadButtons();
         if (phrases.isEmpty()) {
             Main.log("Не вышло загрузить фразы для рассылки");

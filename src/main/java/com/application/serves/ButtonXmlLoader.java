@@ -8,12 +8,13 @@ import org.w3c.dom.*;
 
 import javax.xml.parsers.*;
 import java.io.File;
+import java.nio.file.Path;
 import java.util.*;
 
 public class ButtonXmlLoader {
-    private final String xmlPath;
+    private final Path xmlPath;
 
-    public ButtonXmlLoader(String xmlPath) {
+    public ButtonXmlLoader(Path xmlPath) {
         this.xmlPath = xmlPath;
     }
 
@@ -22,7 +23,7 @@ public class ButtonXmlLoader {
         try {
             DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
             DocumentBuilder builder = factory.newDocumentBuilder();
-            Document doc = builder.parse(new File(xmlPath));
+            Document doc = builder.parse(xmlPath.toFile());
             Element root = doc.getDocumentElement();
             NodeList buttonNodes = root.getChildNodes();
 
