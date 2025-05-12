@@ -11,7 +11,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class DBProxy {
-    private static final Path path = Path.of("data", "database.db");
+    private static final Path path = FileManager.getFilePatch("database.db");
     private static final String URL = "jdbc:sqlite:" + path.toString();
     private static Connection conn;
 

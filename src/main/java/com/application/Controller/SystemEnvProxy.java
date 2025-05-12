@@ -1,8 +1,10 @@
 package com.application.Controller;
 
+import com.application.Main;
+
 public class SystemEnvProxy {
     public String get(String varName) {
-        if (!(Integer.parseInt(System.getenv("AMVERA")) == 1)) {
+        if (!Main.inAmvera()) {
             throw new RuntimeException("Не в облаке амверы");
         }
         String var = System.getenv(varName);

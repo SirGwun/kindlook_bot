@@ -4,13 +4,12 @@ import com.application.serves.DBProxy;
 
 import java.nio.file.Path;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class Phrase {
     int id;
     String text;
-    private List<Path> imagePaths;
+    private List<String> imageNames;
 
     public Phrase(String phrase) {
         this.text = phrase;
@@ -22,10 +21,10 @@ public class Phrase {
 
     }
 
-    public Phrase(String phrase, List<Path> imagePaths) {
+    public Phrase(String phrase, List<String> imagePaths) {
         this.text = phrase;
         if (!imagePaths.isEmpty()) {
-            this.imagePaths = imagePaths;
+            this.imageNames = imagePaths;
         }
         try {
             this.id = DBProxy.insertPhrase(text);
@@ -47,11 +46,11 @@ public class Phrase {
         return text;
     }
 
-    public List<Path> getImagePaths() {
-        return imagePaths;
+    public List<String> getImageNames() {
+        return imageNames;
     }
 
-    public void setImagePaths(List<Path> imagePaths) {
-        this.imagePaths = imagePaths;
+    public void setImageNames(List<String> imageNames) {
+        this.imageNames = imageNames;
     }
 }

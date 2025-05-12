@@ -79,15 +79,15 @@ public class ButtonXmlLoader {
         String imagesAttr = phraseElement.getAttribute("image");
 
 
-        List<Path> imagePaths = new ArrayList<>();
-        if (imagesAttr != null && !imagesAttr.isBlank()) {
+        List<String> imageNames = new ArrayList<>();
+        if (!imagesAttr.isBlank()) {
             String[] parts = imagesAttr.split(",");
             for (String part : parts) {
-                imagePaths.add(Path.of("data", "images", part.trim()));
+                imageNames.add(part.trim());
             }
         }
 
-        return new Phrase(text, imagePaths);
+        return new Phrase(text, imageNames);
     }
 }
 

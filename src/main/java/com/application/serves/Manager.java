@@ -27,7 +27,7 @@ public class Manager {
     }
 
     public void init() {
-        ButtonXmlLoader loader = new ButtonXmlLoader(Paths.get("data", "data.xml"));
+        ButtonXmlLoader loader = new ButtonXmlLoader(FileManager.getFilePatch("data.xml"));
         buttonTree = loader.loadButtons();
         extractPhrases(buttonTree);
     }

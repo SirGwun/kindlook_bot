@@ -17,7 +17,6 @@ import java.util.logging.Level;
 
 
 public class Main {
-    private static final Dotenv dotenv = Dotenv.configure().load();
     private static HttpsTelegramServer server;
 
     public static void main(String[] args) {
@@ -44,12 +43,23 @@ public class Main {
     }
 
     public static String getEnvVar(String var) {
-        if (!(Integer.parseInt(System.getenv("AMVERA")) == 1)) {
+        if (inAmvera()) {
             SystemEnvProxy proxy = new SystemEnvProxy();
             return proxy.get(var);
+        } else {
+            Dotenv dotenv = Dotenv.configure().load();
+            return dotenv.get(var);
         }
-        return dotenv.get(var);
     }
+
+    public static boolean inAmvera() {
+        String amv = System.getenv("AMVERA");
+        if (amv == null) {
+            return false;
+        }
+        return Integer.parseInt(amv) == 1;
+    }
+
 
     public static HttpsTelegramServer getServer() {
         return server;

@@ -6,6 +6,7 @@ import com.application.Model.*;
 import com.application.TelegramBotAPI;
 import com.application.serves.ButtonXmlLoader;
 import com.application.serves.DBProxy;
+import com.application.serves.FileManager;
 import com.application.serves.Manager;
 
 import java.io.IOException;
@@ -99,7 +100,7 @@ public class BroadcastService {
     }
 
     private void loadPhrases() {
-        ButtonXmlLoader loader = new ButtonXmlLoader(Paths.get("data" ,"broadcastData.xml"));
+        ButtonXmlLoader loader = new ButtonXmlLoader(FileManager.getFilePatch("broadcastData.xml"));
         List<Button> phrases = loader.loadButtons();
         if (phrases.isEmpty()) {
             Main.log("Не вышло загрузить фразы для рассылки");

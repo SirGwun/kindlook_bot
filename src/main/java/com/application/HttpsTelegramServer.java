@@ -3,14 +3,13 @@ package com.application;
 import com.application.Controller.TelegramWebhookHandler;
 import com.application.Model.InlineKeyboard;
 import com.application.Model.User;
+import com.application.serves.FileManager;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsServer;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
-import java.awt.*;
 import java.io.*;
-import java.lang.reflect.Array;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -29,7 +28,7 @@ public class HttpsTelegramServer {
             KeyStoreException, NoSuchAlgorithmException, CertificateException {
         char[] password = Objects.requireNonNull(Main.getEnvVar("HTTPS_PAS")).toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
-        FileInputStream fileInput = new FileInputStream(Path.of("data", "keystore.jks").toFile());
+        FileInputStream fileInput = new FileInputStream(FileManager.getFilePatch("keystore.jks").toFile());
         ks.load(fileInput, password);
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
@@ -56,10 +55,10 @@ public class HttpsTelegramServer {
         sendJson(apiUrl, jsonPayload);
     }
 
-    public static void sendMessageWithImages(User user, String text, List<Path> imageList) throws IOException {
+    public static void sendMessageWithImages(User user, String text, List<String> imageList) throws IOException {
         if (imageList.isEmpty()) return;
 
-        File imageFile = imageList.getFirst().toFile();
+        File imageFile = FileManager.getFilePatch(imageList.getFirst()).toFile();
         if (!imageFile.exists()) {
             throw new FileNotFoundException("Файл не найден: " + imageFile.getAbsolutePath());
         }

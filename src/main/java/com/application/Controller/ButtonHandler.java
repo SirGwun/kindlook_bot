@@ -6,12 +6,10 @@ import com.application.Model.*;
 import com.application.serves.DBProxy;
 import com.application.serves.Manager;
 import com.fasterxml.jackson.databind.JsonNode;
-import org.w3c.dom.Node;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
-import java.util.spi.ToolProvider;
 
 public class ButtonHandler {
     public static void handle(JsonNode node) {
@@ -77,8 +75,8 @@ public class ButtonHandler {
                         Manager.getInstance().findButton(button.getId()).orElseThrow(()
                                 -> new IllegalArgumentException("Button not found")), user);
                 text = phrase != null ? phrase.getText() : "Фразы закончились.";
-                if (phrase.getImagePaths() != null && !phrase.getImagePaths().isEmpty()) {
-                    HttpsTelegramServer.sendMessageWithImages(user, text, phrase.getImagePaths());
+                if (phrase.getImageNames() != null && !phrase.getImageNames().isEmpty()) {
+                    HttpsTelegramServer.sendMessageWithImages(user, text, phrase.getImageNames());
                 } else {
                     HttpsTelegramServer.sendMessage(user, text);
                 }
