@@ -1,6 +1,7 @@
 package com.application;
 
 import com.application.Controller.BroadcastService;
+import com.application.Controller.SystemEnvProxy;
 import com.application.serves.DBProxy;
 import com.application.serves.Manager;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -43,6 +44,10 @@ public class Main {
     }
 
     public static String getEnvVar(String var) {
+        if (!(Integer.parseInt(System.getenv("AMVERA")) == 1)) {
+            SystemEnvProxy proxy = new SystemEnvProxy();
+            return proxy.get(var);
+        }
         return dotenv.get(var);
     }
 
