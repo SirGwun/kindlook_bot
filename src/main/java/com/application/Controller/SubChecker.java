@@ -15,8 +15,8 @@ import java.nio.charset.StandardCharsets;
 
 public class SubChecker {
     public static boolean isThisUserSubscribed(User user) throws IOException {
-        String tocken = Main.getDotenv().get("TOKEN");
-        String chanal = Main.getDotenv().get("CHANNEL_NAME");
+        String tocken = Main.getEnvVar("TOKEN");
+        String chanal = Main.getEnvVar("CHANNEL_NAME");
         if (tocken == null || chanal == null) {
             throw new IOException("Не удалось прочитать env файл");
         }
@@ -46,10 +46,10 @@ public class SubChecker {
 
 
     public static String getShortSubText() {
-        return "Нет подписки не группу " + Main.getDotenv().get("CHANNEL_NAME");
+        return "Нет подписки не группу " + Main.getEnvVar("CHANNEL_NAME");
     }
 
     public static String getSubText() {
-        return "Подпишитесь на группу " + Main.getDotenv().get("CHANNEL_NAME");
+        return "Подпишитесь на группу " + Main.getEnvVar("CHANNEL_NAME");
     }
 }

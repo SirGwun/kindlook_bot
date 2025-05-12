@@ -42,8 +42,8 @@ public class Main {
         }
     }
 
-    public static Dotenv getDotenv() {
-        return dotenv;
+    public static String getEnvVar(String var) {
+        return dotenv.get(var);
     }
 
     public static HttpsTelegramServer getServer() {

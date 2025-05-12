@@ -27,7 +27,7 @@ public class HttpsTelegramServer {
 
     public HttpsTelegramServer() throws IOException, KeyManagementException, UnrecoverableKeyException,
             KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        char[] password = Objects.requireNonNull(Main.getDotenv().get("HTTPS_PAS")).toCharArray();
+        char[] password = Objects.requireNonNull(Main.getEnvVar("HTTPS_PAS")).toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
         FileInputStream fileInput = new FileInputStream(Path.of("data", "keystore.jks").toFile());
         ks.load(fileInput, password);
@@ -51,7 +51,7 @@ public class HttpsTelegramServer {
     }
 
     public static void sendMessage(User user, String text) throws IOException {
-        String apiUrl = "https://api.telegram.org/bot" + Main.getDotenv().get("TOKEN") + "/sendMessage";
+        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/sendMessage";
         String jsonPayload = "{\"chat_id\":\"" + user.getId() + "\", \"text\":\"" + text + "\"}";
         sendJson(apiUrl, jsonPayload);
     }
@@ -64,7 +64,7 @@ public class HttpsTelegramServer {
             throw new FileNotFoundException("Файл не найден: " + imageFile.getAbsolutePath());
         }
 
-        String apiUrl = "https://api.telegram.org/bot" + Main.getDotenv().get("TOKEN") + "/sendPhoto";
+        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/sendPhoto";
         String boundary = Long.toHexString(System.currentTimeMillis());
 
         HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
@@ -111,7 +111,7 @@ public class HttpsTelegramServer {
 
 
     public static void sendInlineKeyboard(InlineKeyboard keyboard, User user) throws IOException {
-        String apiUrl = "https://api.telegram.org/bot" + Main.getDotenv().get("TOKEN") + "/sendMessage";
+        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/sendMessage";
         String jsonPayload = """
         {
             "chat_id": "%s",
@@ -123,7 +123,7 @@ public class HttpsTelegramServer {
     }
 
     public static void answerCallbackQuery(String callbackQueryId, String text, boolean showAlert) throws IOException {
-        String apiUrl = "https://api.telegram.org/bot" + Main.getDotenv().get("TOKEN") + "/answerCallbackQuery";
+        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/answerCallbackQuery";
 
         String jsonPayload = String.format("""
             {
