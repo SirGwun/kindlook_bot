@@ -2,6 +2,7 @@ package com.application.Model;
 
 import com.application.serves.DBProxy;
 
+import java.nio.file.Path;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +10,7 @@ import java.util.List;
 public class Phrase {
     int id;
     String text;
-    private List<String> imagePaths;
+    private List<Path> imagePaths;
 
     public Phrase(String phrase) {
         this.text = phrase;
@@ -21,9 +22,11 @@ public class Phrase {
 
     }
 
-    public Phrase(String phrase, List<String> imagePaths) {
+    public Phrase(String phrase, List<Path> imagePaths) {
         this.text = phrase;
-        this.imagePaths = imagePaths;
+        if (!imagePaths.isEmpty()) {
+            this.imagePaths = imagePaths;
+        }
         try {
             this.id = DBProxy.insertPhrase(text);
         } catch (SQLException e) {
@@ -44,11 +47,11 @@ public class Phrase {
         return text;
     }
 
-    public List<String> getImagePaths() {
+    public List<Path> getImagePaths() {
         return imagePaths;
     }
 
-    public void setImagePaths(List<String> imagePaths) {
+    public void setImagePaths(List<Path> imagePaths) {
         this.imagePaths = imagePaths;
     }
 }

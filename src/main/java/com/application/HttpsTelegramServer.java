@@ -14,6 +14,7 @@ import java.lang.reflect.Array;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.*;
 import java.security.cert.CertificateException;
 import java.util.Arrays;
@@ -28,7 +29,7 @@ public class HttpsTelegramServer {
             KeyStoreException, NoSuchAlgorithmException, CertificateException {
         char[] password = Objects.requireNonNull(Main.getDotenv().get("HTTPS_PAS")).toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
-        FileInputStream fileInput = new FileInputStream("keystore.jks");
+        FileInputStream fileInput = new FileInputStream(Path.of("data", "keystore.jks").toFile());
         ks.load(fileInput, password);
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
@@ -55,10 +56,10 @@ public class HttpsTelegramServer {
         sendJson(apiUrl, jsonPayload);
     }
 
-    public static void sendMessageWithImages(User user, String text, List<String> imageList) throws IOException {
+    public static void sendMessageWithImages(User user, String text, List<Path> imageList) throws IOException {
         if (imageList.isEmpty()) return;
 
-        File imageFile = new File(imageList.get(0));
+        File imageFile = imageList.getFirst().toFile();
         if (!imageFile.exists()) {
             throw new FileNotFoundException("Файл не найден: " + imageFile.getAbsolutePath());
         }

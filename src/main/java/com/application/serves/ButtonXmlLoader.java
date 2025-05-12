@@ -78,11 +78,12 @@ public class ButtonXmlLoader {
         String text = phraseElement.getTextContent().trim();
         String imagesAttr = phraseElement.getAttribute("image");
 
-        List<String> imagePaths = new ArrayList<>();
+
+        List<Path> imagePaths = new ArrayList<>();
         if (imagesAttr != null && !imagesAttr.isBlank()) {
             String[] parts = imagesAttr.split(",");
             for (String part : parts) {
-                imagePaths.add(part.trim());
+                imagePaths.add(Path.of("data", "images", part.trim()));
             }
         }
 
