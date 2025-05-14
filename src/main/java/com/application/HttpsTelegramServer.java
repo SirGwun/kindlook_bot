@@ -28,10 +28,9 @@ public class HttpsTelegramServer {
 
     public HttpsTelegramServer() throws IOException, KeyManagementException, UnrecoverableKeyException,
             KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        HttpsServer server = HttpsServer.create(new InetSocketAddress("0.0.0.0", 8443), 0);
+        server = HttpsServer.create(new InetSocketAddress("0.0.0.0", 8443), 0);
         server.createContext("/webhook", new TelegramWebhookHandler());
         server.setExecutor(null);
-        server.start();
     }
 
     public void start() {
