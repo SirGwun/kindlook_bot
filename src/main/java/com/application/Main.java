@@ -25,8 +25,9 @@ public class Main {
             server = new HttpsTelegramServer();
             server.start();
 
-//            BroadcastService service = new BroadcastService();
-//            service.startBroadcastScheduler();
+            BroadcastService service = new BroadcastService();
+            service.startBroadcastScheduler();
+            service.sendBroadcastToAllUsers();
         } catch (UnrecoverableKeyException e) {
             log("Невозможно восстановить ключ из хранилища: " + e.getMessage(), Level.SEVERE);
         } catch (CertificateException e) {
