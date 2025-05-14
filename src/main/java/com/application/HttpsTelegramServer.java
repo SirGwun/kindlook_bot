@@ -5,10 +5,12 @@ import com.application.Model.InlineKeyboard;
 import com.application.Model.User;
 import com.application.serves.FileManager;
 import com.sun.net.httpserver.HttpsConfigurator;
+import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
 import java.io.*;
 import java.net.*;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +41,23 @@ public class HttpsTelegramServer {
         sslContext.init(kmf.getKeyManagers(), null, null);
 
         server = HttpsServer.create(new InetSocketAddress(port), 0);
-        server.setHttpsConfigurator(new HttpsConfigurator(sslContext));
+        server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+            @Override
+            public void configure(HttpsParameters params) {
+                try {
+                    System.out.println("Настройка HTTPS-параметров");
+                    SSLContext context = getSSLContext();
+                    SSLEngine engine = context.createSSLEngine();
+                    params.setNeedClientAuth(false);
+                    params.setCipherSuites(engine.getEnabledCipherSuites());
+                    params.setProtocols(engine.getEnabledProtocols());
+                    params.setSSLParameters(context.getDefaultSSLParameters());
+                } catch (Exception e) {
+                    System.err.println("Ошибка конфигурации HTTPS: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
         server.createContext("/webhook", new TelegramWebhookHandler());
         server.setExecutor(null);
     }
