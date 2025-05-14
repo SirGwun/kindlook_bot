@@ -20,6 +20,7 @@ public class TelegramWebhookHandler implements HttpHandler {
     public void handle(HttpExchange exchange) throws IOException {
         if (!"POST".equals(exchange.getRequestMethod())) {
             exchange.sendResponseHeaders(405, -1);
+            System.out.println("have exchange " + exchange.getResponseBody());
             return;
         }
 

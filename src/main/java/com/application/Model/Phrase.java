@@ -4,6 +4,7 @@ import com.application.serves.DBProxy;
 
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Phrase {
@@ -47,6 +48,9 @@ public class Phrase {
     }
 
     public List<String> getImageNames() {
+        if (imageNames == null) {
+            return new ArrayList<>();
+        }
         return imageNames;
     }
 
