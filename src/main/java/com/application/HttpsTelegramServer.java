@@ -28,7 +28,36 @@ public class HttpsTelegramServer {
 
     public HttpsTelegramServer() throws IOException, KeyManagementException, UnrecoverableKeyException,
             KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        server = HttpsServer.create(new InetSocketAddress("0.0.0.0", 8443), 0);
+        char[] password = Objects.requireNonNull(Main.getEnvVar("HTTPS_PAS")).toCharArray();
+        KeyStore ks = KeyStore.getInstance("JKS");
+        FileInputStream fileInput = new FileInputStream(FileManager.getFilePatch("keystore.jks").toFile());
+        ks.load(fileInput, password);
+
+        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
+        kmf.init(ks, password);
+        Arrays.fill(password, '*');
+
+        SSLContext sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(kmf.getKeyManagers(), null, null);
+
+        server = HttpsServer.create(new InetSocketAddress(port), 0);
+        server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
+            @Override
+            public void configure(HttpsParameters params) {
+                try {
+                    System.out.println("Настройка HTTPS-параметров");
+                    SSLContext context = getSSLContext();
+                    SSLEngine engine = context.createSSLEngine();
+                    params.setNeedClientAuth(false);
+                    params.setCipherSuites(engine.getEnabledCipherSuites());
+                    params.setProtocols(engine.getEnabledProtocols());
+                    params.setSSLParameters(context.getDefaultSSLParameters());
+                } catch (Exception e) {
+                    System.err.println("Ошибка конфигурации HTTPS: " + e.getMessage());
+                    e.printStackTrace();
+                }
+            }
+        });
         server.createContext("/webhook", new TelegramWebhookHandler());
         server.setExecutor(null);
     }
