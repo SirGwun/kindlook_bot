@@ -9,9 +9,8 @@ build:
   dockerfile: Dockerfile
   skip: false
 run:
-  image: kindlookbot:latest
+  image: ""
   command: null
   args: null
   persistenceMount: /data
   containerPort: 8443
-  servicePort: 8443
