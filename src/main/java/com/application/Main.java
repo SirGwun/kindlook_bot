@@ -1,5 +1,6 @@
 package com.application;
 
+import com.application.Controller.BroadcastService;
 import com.application.Controller.SystemEnvProxy;
 import com.application.serves.HttpTelegramServer;
 import com.application.serves.HttpsTelegramServer;
@@ -38,6 +39,8 @@ public class Main {
 //        }
         Manager.getInstance();
         server = new HttpTelegramServer();
+        BroadcastService broadcastServices = new BroadcastService();
+        broadcastServices.startBroadcastScheduler();
     }
 
     public static String getEnvVar(String var) {

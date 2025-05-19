@@ -17,7 +17,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class HttpsTelegramServer extends Server {
-    int port = 8443;
+    int port = 8080;
     HttpsServer server;
 
     public HttpsTelegramServer() throws IOException, KeyManagementException, UnrecoverableKeyException,

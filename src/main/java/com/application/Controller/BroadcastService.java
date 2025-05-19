@@ -44,27 +44,27 @@ public class BroadcastService {
         }, initialDelay, Duration.ofDays(1).toMillis(), TimeUnit.MILLISECONDS);
     }
 
-    public long computeInitialDelayUntilNextBroadcast(ZoneOffset offset, LocalTime targetTime) {
-        return 0L; // для теста
-    }
-
-
 //    public long computeInitialDelayUntilNextBroadcast(ZoneOffset offset, LocalTime targetTime) {
-//        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC).withZoneSameInstant(offset);
-//        ZonedDateTime nextBroadcast = now.withHour(targetTime.getHour())
-//                .withMinute(targetTime.getMinute())
-//                .withSecond(0)
-//                .withNano(0);
-//
-//        if (now.isAfter(nextBroadcast)) {
-//            nextBroadcast = nextBroadcast.plusDays(1);
-//        }
-//
-//        Duration delay = Duration.between(now, nextBroadcast);
-//        return delay.toMillis();
+//        return 0L; // для теста
 //    }
 
-    public void sendBroadcastToAllUsers() {
+
+    public long computeInitialDelayUntilNextBroadcast(ZoneOffset offset, LocalTime targetTime) {
+        ZonedDateTime now = ZonedDateTime.now(ZoneOffset.UTC).withZoneSameInstant(offset);
+        ZonedDateTime nextBroadcast = now.withHour(targetTime.getHour())
+                .withMinute(targetTime.getMinute())
+                .withSecond(0)
+                .withNano(0);
+
+        if (now.isAfter(nextBroadcast)) {
+            nextBroadcast = nextBroadcast.plusDays(1);
+        }
+
+        Duration delay = Duration.between(now, nextBroadcast);
+        return delay.toMillis();
+    }
+
+    private void sendBroadcastToAllUsers() {
         try {
             List<User> userList = DBProxy.getUsers();
             userList.remove(GLOBAL_USER);
@@ -80,12 +80,7 @@ public class BroadcastService {
             Main.log(e.getMessage());
         }
     }
-    boolean hasBroadcastBeenSentToday(LocalDate date) {
-        return getBroadcastMark(date);
-    }
-    void markBroadcastAsSent(LocalDate date) {
-        addBroadcastMark(date);
-    }
+
     public LocalDate getTodayAtOffset(ZoneOffset offset) {
         return ZonedDateTime.now(ZoneOffset.UTC).withZoneSameInstant(offset).toLocalDate();
     }
