@@ -13,7 +13,7 @@ public class HttpTelegramServer extends Server {
     int port = 8080;
     public HttpTelegramServer() {
         try {
-            server = HttpServer.create(new InetSocketAddress(port), 0);
+            server = HttpServer.create(new InetSocketAddress("0.0.0.0", port), 0);
             server.createContext("/webhook", new TelegramWebhookHandler());
             server.setExecutor(null);
             start();
