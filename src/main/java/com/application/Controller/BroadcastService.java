@@ -1,16 +1,14 @@
 package com.application.Controller;
 
-import com.application.HttpsTelegramServer;
 import com.application.Main;
 import com.application.Model.*;
-import com.application.TelegramBotAPI;
+import com.application.serves.TelegramAPI;
 import com.application.serves.ButtonXmlLoader;
 import com.application.serves.DBProxy;
 import com.application.serves.FileManager;
 import com.application.serves.Manager;
 
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.time.*;
 import java.util.List;
@@ -27,7 +25,7 @@ public class BroadcastService {
     private static final int HOUR_FOR_BROADCAST = 12;
     private static final int MINUTE_FOR_BROADCAST = 0;
     PhraseButton root;
-    TelegramBotAPI api = new TelegramBotAPI();
+    TelegramAPI api = new TelegramAPI();
     public void startBroadcastScheduler() {
         ZoneOffset offset = ZoneOffset.of(TIME_ZONE);
         LocalTime targetTime = LocalTime.of(HOUR_FOR_BROADCAST, MINUTE_FOR_BROADCAST);

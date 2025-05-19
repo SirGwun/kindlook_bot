@@ -1,76 +1,25 @@
-package com.application;
+package com.application.serves;
 
-import com.application.Controller.TelegramWebhookHandler;
+import com.application.Main;
 import com.application.Model.InlineKeyboard;
+import com.application.Model.Phrase;
 import com.application.Model.User;
-import com.application.serves.FileManager;
-import com.sun.net.httpserver.HttpsConfigurator;
-import com.sun.net.httpserver.HttpsParameters;
-import com.sun.net.httpserver.HttpsServer;
 
-import javax.net.ssl.KeyManagerFactory;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLEngine;
 import java.io.*;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
-import java.nio.file.Path;
-import java.security.*;
-import java.security.cert.CertificateException;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
-public class HttpsTelegramServer {
-    int port = 8443;
-    HttpsServer server;
-
-    public HttpsTelegramServer() throws IOException, KeyManagementException, UnrecoverableKeyException,
-            KeyStoreException, NoSuchAlgorithmException, CertificateException {
-        char[] password = Objects.requireNonNull(Main.getEnvVar("HTTPS_PAS")).toCharArray();
-        KeyStore ks = KeyStore.getInstance("JKS");
-        FileInputStream fileInput = new FileInputStream(FileManager.getFilePatch("keystore.jks").toFile());
-        ks.load(fileInput, password);
-
-        KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
-        kmf.init(ks, password);
-        Arrays.fill(password, '*');
-
-        SSLContext sslContext = SSLContext.getInstance("TLS");
-        sslContext.init(kmf.getKeyManagers(), null, null);
-
-        server = HttpsServer.create(new InetSocketAddress(port), 0);
-        server.setHttpsConfigurator(new HttpsConfigurator(sslContext) {
-            @Override
-            public void configure(HttpsParameters params) {
-                try {
-                    System.out.println("Настройка HTTPS-параметров");
-                    SSLContext context = getSSLContext();
-                    SSLEngine engine = context.createSSLEngine();
-                    params.setNeedClientAuth(false);
-                    params.setCipherSuites(engine.getEnabledCipherSuites());
-                    params.setProtocols(engine.getEnabledProtocols());
-                    params.setSSLParameters(context.getDefaultSSLParameters());
-                } catch (Exception e) {
-                    System.err.println("Ошибка конфигурации HTTPS: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            }
-        });
-        server.createContext("/webhook", new TelegramWebhookHandler());
-        server.setExecutor(null);
-    }
-
-    public void start() {
-        server.start();
-        System.out.println("HTTPS Сервер запущен на порту " + port);
-    }
-
-    public static void sendMessage(User user, String text) throws IOException {
-        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/sendMessage";
-        String jsonPayload = "{\"chat_id\":\"" + user.getId() + "\", \"text\":\"" + text + "\"}";
-        sendJson(apiUrl, jsonPayload);
+public class TelegramAPI {
+    public static boolean sendPhrase(User user, Phrase phrase) throws IOException {
+        if (!phrase.getImageNames().isEmpty()) {
+            sendMessageWithImages(user, phrase.getText(), phrase.getImageNames());
+        } else {
+           sendMessage(user, phrase.getText());
+        }
+        return true;
     }
 
     public static void sendMessageWithImages(User user, String text, List<String> imageList) throws IOException {
@@ -125,7 +74,11 @@ public class HttpsTelegramServer {
         }
     }
 
-
+    public static void sendMessage(User user, String text) throws IOException {
+        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/sendMessage";
+        String jsonPayload = "{\"chat_id\":\"" + user.getId() + "\", \"text\":\"" + text + "\"}";
+        sendJson(apiUrl, jsonPayload);
+    }
 
     public static void sendInlineKeyboard(InlineKeyboard keyboard, User user) throws IOException {
         String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/sendMessage";
@@ -136,19 +89,6 @@ public class HttpsTelegramServer {
             "reply_markup": %s
         }
         """.formatted(user.getId(), "Временное сообщение", keyboard.toJson());
-        sendJson(apiUrl, jsonPayload);
-    }
-
-    public static void answerCallbackQuery(String callbackQueryId, String text, boolean showAlert) throws IOException {
-        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/answerCallbackQuery";
-
-        String jsonPayload = String.format("""
-            {
-              "callback_query_id": "%s",
-              "text": "%s",
-              "show_alert": %s
-            }
-            """, callbackQueryId, text, showAlert);
         sendJson(apiUrl, jsonPayload);
     }
 
@@ -179,4 +119,16 @@ public class HttpsTelegramServer {
         System.out.println("Sent JSON: " + jsonPayload);
     }
 
+    public static void answerCallbackQuery(String callbackQueryId, String text, boolean showAlert) throws IOException {
+        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/answerCallbackQuery";
+
+        String jsonPayload = String.format("""
+            {
+              "callback_query_id": "%s",
+              "text": "%s",
+              "show_alert": %s
+            }
+            """, callbackQueryId, text, showAlert);
+        sendJson(apiUrl, jsonPayload);
+    }
 }

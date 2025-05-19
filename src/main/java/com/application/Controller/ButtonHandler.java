@@ -1,10 +1,10 @@
 package com.application.Controller;
 
-import com.application.HttpsTelegramServer;
 import com.application.Main;
 import com.application.Model.*;
 import com.application.serves.DBProxy;
 import com.application.serves.Manager;
+import com.application.serves.TelegramAPI;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -27,7 +27,7 @@ public class ButtonHandler {
                 handleUnsubscribedUser(user, callbackId);
                 return;
             }
-            HttpsTelegramServer.answerCallbackQuery(callbackId, "Принято", false);
+            TelegramAPI.answerCallbackQuery(callbackId, "Принято", false);
             handleSubscribedUser(user, query);
         } catch (SQLException e) {
             Main.log("Failed to get user from SQL: " + id);
@@ -49,8 +49,8 @@ public class ButtonHandler {
     }
 
     private static void handleUnsubscribedUser(User user, String callbackId) throws IOException {
-        HttpsTelegramServer.answerCallbackQuery(callbackId, SubChecker.getShortSubText(), true);
-        HttpsTelegramServer.sendMessage(user, SubChecker.getSubText());
+        TelegramAPI.answerCallbackQuery(callbackId, SubChecker.getShortSubText(), true);
+        TelegramAPI.sendMessage(user, SubChecker.getSubText());
     }
 
     private static void handleSubscribedUser(User user, JsonNode query) throws IOException {
@@ -59,7 +59,7 @@ public class ButtonHandler {
 
         Optional<Button> buttonOpt = Manager.getInstance().findButton(Integer.parseInt(callbackData));
         if (buttonOpt.isEmpty()) {
-            HttpsTelegramServer.answerCallbackQuery(callbackId, "Кнопка не найдена", true);
+            TelegramAPI.answerCallbackQuery(callbackId, "Кнопка не найдена", true);
             return;
         }
 
@@ -67,7 +67,7 @@ public class ButtonHandler {
 
         if (button instanceof TopLevelButton topButton) {
             InlineKeyboard keyboard = new InlineKeyboard(topButton.getSubButtonList(), topButton.getText());
-            HttpsTelegramServer.sendInlineKeyboard(keyboard, user);
+            TelegramAPI.sendInlineKeyboard(keyboard, user);
         } else {
             String text;
             try {
@@ -76,9 +76,9 @@ public class ButtonHandler {
                                 -> new IllegalArgumentException("Button not found")), user);
                 text = phrase != null ? phrase.getText() : "Фразы закончились.";
                 if (phrase.getImageNames() != null && !phrase.getImageNames().isEmpty()) {
-                    HttpsTelegramServer.sendMessageWithImages(user, text, phrase.getImageNames());
+                    TelegramAPI.sendMessageWithImages(user, text, phrase.getImageNames());
                 } else {
-                    HttpsTelegramServer.sendMessage(user, text);
+                    TelegramAPI.sendMessage(user, text);
                 }
             } catch (SQLException e) {
                 Main.log("Failed to getNextPhrase from SQL: " + user.getName());

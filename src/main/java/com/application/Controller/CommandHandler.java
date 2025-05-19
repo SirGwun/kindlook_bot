@@ -1,11 +1,11 @@
 package com.application.Controller;
 
-import com.application.HttpsTelegramServer;
 import com.application.Main;
 import com.application.Model.InlineKeyboard;
 import com.application.Model.User;
 import com.application.serves.DBProxy;
 import com.application.serves.Manager;
+import com.application.serves.TelegramAPI;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import java.io.IOException;
@@ -21,7 +21,7 @@ public class CommandHandler {
         try {
             user = getOrCreateUser(Long.parseLong(userId), userName);
             if (!SubChecker.isThisUserSubscribed(user)) {
-                HttpsTelegramServer.sendMessage(user, SubChecker.getSubText());
+                TelegramAPI.sendMessage(user, SubChecker.getSubText());
                 return;
             }
 
@@ -31,7 +31,7 @@ public class CommandHandler {
             } else {
                 keyboard = new InlineKeyboard(Manager.getInstance().getRootList(), Manager.getInstance().getUnknownMessage());
             }
-            HttpsTelegramServer.sendInlineKeyboard(keyboard, user);
+            TelegramAPI.sendInlineKeyboard(keyboard, user);
         } catch (SQLException | IOException e) {
             Main.log(e.getMessage());
         }
