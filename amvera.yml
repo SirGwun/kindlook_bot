@@ -9,8 +9,8 @@ build:
   dockerfile: Dockerfile
   skip: false
 run:
-  image: ""
+  image: null
   command: null
   args: null
   persistenceMount: /data
-  containerPort: 8443
+  containerPort: 8080
