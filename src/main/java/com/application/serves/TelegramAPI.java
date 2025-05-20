@@ -4,6 +4,7 @@ import com.application.Main;
 import com.application.Model.InlineKeyboard;
 import com.application.Model.Phrase;
 import com.application.Model.User;
+import com.application.View.Logger;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -62,16 +63,7 @@ public class TelegramAPI {
             writer.append("--").append(boundary).append("--\r\n").flush();
         }
 
-        int responseCode = conn.getResponseCode();
-        System.out.println("Response Code: " + responseCode);
-
-        try (BufferedReader in = new BufferedReader(new InputStreamReader(
-                responseCode < HttpURLConnection.HTTP_BAD_REQUEST ? conn.getInputStream() : conn.getErrorStream()))) {
-            String line;
-            while ((line = in.readLine()) != null) {
-                System.out.println(line);
-            }
-        }
+        Logger.logResponse(conn);
     }
 
     public static void sendMessage(User user, String text) throws IOException {
