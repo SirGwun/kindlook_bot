@@ -25,7 +25,7 @@ public class TelegramAPI {
     public static void sendMessageWithImages(User user, String text, List<String> imageList) throws IOException {
         if (imageList.isEmpty()) return;
 
-        File imageFile = FileManager.getFilePatch(imageList.getFirst()).toFile();
+        File imageFile = FileManager.getImagePath(imageList.getFirst()).toFile();
         if (!imageFile.exists()) {
             throw new FileNotFoundException("Файл не найден: " + imageFile.getAbsolutePath());
         }

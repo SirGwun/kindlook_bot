@@ -6,12 +6,11 @@ import com.application.Model.User;
 
 import java.nio.file.Path;
 import java.sql.*;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.*;
 
 public class DBProxy {
-    private static final Path path = FileManager.getFilePatch("database.db");
+    private static final Path path = FileManager.getDataFilePath("database.db");
     private static final String URL = "jdbc:sqlite:" + path.toString();
     private static Connection conn;
 

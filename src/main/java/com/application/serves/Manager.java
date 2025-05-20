@@ -1,9 +1,7 @@
 package com.application.serves;
 
-import com.application.Main;
 import com.application.Model.*;
 
-import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.util.*;
 
@@ -27,7 +25,7 @@ public class Manager {
     }
 
     public void init() {
-        ButtonXmlLoader loader = new ButtonXmlLoader(FileManager.getFilePatch("data.xml"));
+        ButtonXmlLoader loader = new ButtonXmlLoader(FileManager.getDataFilePath("data.xml"));
         buttonTree = loader.loadButtons();
         extractPhrases(buttonTree);
     }

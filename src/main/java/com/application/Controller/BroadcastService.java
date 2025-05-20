@@ -93,7 +93,7 @@ public class BroadcastService {
     }
 
     private void loadPhrases() {
-        ButtonXmlLoader loader = new ButtonXmlLoader(FileManager.getFilePatch("broadcastData.xml"));
+        ButtonXmlLoader loader = new ButtonXmlLoader(FileManager.getDataFilePath("broadcastData.xml"));
         List<Button> phrases = loader.loadButtons();
         if (phrases.isEmpty()) {
             Main.log("Не вышло загрузить фразы для рассылки");

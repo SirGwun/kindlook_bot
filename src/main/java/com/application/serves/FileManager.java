@@ -2,20 +2,34 @@ package com.application.serves;
 
 import com.application.Main;
 
+import java.io.FileNotFoundException;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class FileManager {
-    public static Path getFilePatch(String fileName) {
-        if (Main.inAmvera()) {
-            return Path.of("/data", addImageFolderIfNeeded(fileName));
-        }
-        return Path.of("data", addImageFolderIfNeeded(fileName));
+    public static Path getDataFilePath(String fileName) {
+        Path base = Main.inAmvera() ? Path.of("/data") : Path.of("data");
+        return base.resolve(fileName);
     }
 
-    private static String addImageFolderIfNeeded(String fileName) {
-        if (fileName.endsWith(".jpg") || fileName.endsWith(".jpeg")) {
-            return Path.of("images", fileName).toString();
+    public static List<Path> getImagePaths(List<String> imagePathList) throws FileNotFoundException {
+        if (imagePathList == null || imagePathList.isEmpty()) {
+            return Collections.emptyList();
         }
-        return fileName;
+        List<Path> imageFiles = new ArrayList<>();
+        for (String fileName : imagePathList) {
+            imageFiles.add(getImagePath(fileName));
+        }
+        return imageFiles;
+    }
+
+    public static Path getImagePath(String fileName) throws FileNotFoundException {
+        if (fileName.isEmpty()) {
+            throw new FileNotFoundException("Имя файла пустое");
+        }
+        Path base = Path.of(Main.inAmvera() ? "/data" : "data", "images");
+        return base.resolve("fileName");
     }
 }

@@ -24,7 +24,7 @@ public class HttpsTelegramServer extends Server {
             KeyStoreException, NoSuchAlgorithmException, CertificateException {
         char[] password = Objects.requireNonNull(Main.getEnvVar("HTTPS_PAS")).toCharArray();
         KeyStore ks = KeyStore.getInstance("JKS");
-        FileInputStream fileInput = new FileInputStream(FileManager.getFilePatch("keystore.jks").toFile());
+        FileInputStream fileInput = new FileInputStream(FileManager.getDataFilePath("keystore.jks").toFile());
         ks.load(fileInput, password);
 
         KeyManagerFactory kmf = KeyManagerFactory.getInstance("SunX509");
