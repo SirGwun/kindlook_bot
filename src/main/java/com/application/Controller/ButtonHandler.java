@@ -6,12 +6,15 @@ import com.application.serves.DBProxy;
 import com.application.serves.Manager;
 import com.application.serves.TelegramAPI;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
 
 public class ButtonHandler {
+    private static final Logger log = LoggerFactory.getLogger(ButtonHandler.class);
     public static void handle(JsonNode node) {
         JsonNode query = node.get("callback_query");
         JsonNode from = query.path("from");
@@ -30,11 +33,11 @@ public class ButtonHandler {
             TelegramAPI.answerCallbackQuery(callbackId, "Принято", false);
             handleSubscribedUser(user, query);
         } catch (SQLException e) {
-            Main.log("Failed to get user from SQL: " + id);
-            Main.log(e.getMessage());
+            log.error("Failed to get user from SQL: {}", id);
+            log.error(e.getMessage());
         } catch (IOException e) {
-            Main.log("IO failure with Telegram for user: " + id);
-            Main.log(e.getMessage());
+            log.error("IO failure with Telegram for user: {}", id);
+            log.error(e.getMessage());
         }
     }
 
@@ -81,7 +84,7 @@ public class ButtonHandler {
                     TelegramAPI.sendMessage(user, text);
                 }
             } catch (SQLException e) {
-                Main.log("Failed to getNextPhrase from SQL: " + user.getName());
+                log.error("Failed to getNextPhrase from SQL: {}", user.getName());
                 throw new RuntimeException(e);
             }
         }

@@ -1,6 +1,8 @@
 package com.application.Model;
 
 import com.application.serves.DBProxy;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.sql.SQLException;
@@ -8,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Phrase {
+    private static final Logger log = LoggerFactory.getLogger(Phrase.class);
     int id;
     String text;
     private List<String> imageNames;
@@ -17,7 +20,7 @@ public class Phrase {
         try {
             this.id = DBProxy.insertPhrase(text);
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
 
     }
@@ -30,7 +33,7 @@ public class Phrase {
         try {
             this.id = DBProxy.insertPhrase(text);
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 

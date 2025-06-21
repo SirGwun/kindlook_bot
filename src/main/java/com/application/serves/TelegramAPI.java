@@ -4,6 +4,8 @@ import com.application.Main;
 import com.application.Model.InlineKeyboard;
 import com.application.Model.Phrase;
 import com.application.Model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -13,6 +15,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 public class TelegramAPI {
+    private static final Logger log = LoggerFactory.getLogger(TelegramAPI.class);
     public static boolean sendPhrase(User user, Phrase phrase) throws IOException {
         if (!phrase.getImageNames().isEmpty()) {
             sendMessageWithImages(user, phrase.getText(), phrase.getImageNames());
@@ -63,13 +66,13 @@ public class TelegramAPI {
         }
 
         int responseCode = conn.getResponseCode();
-        System.out.println("Response Code: " + responseCode);
+        log.info("Response Code: {}", responseCode);
 
         try (BufferedReader in = new BufferedReader(new InputStreamReader(
                 responseCode < HttpURLConnection.HTTP_BAD_REQUEST ? conn.getInputStream() : conn.getErrorStream()))) {
             String line;
             while ((line = in.readLine()) != null) {
-                System.out.println(line);
+                log.info(line);
             }
         }
     }
@@ -103,7 +106,7 @@ public class TelegramAPI {
         }
 
         int responseCode = conn.getResponseCode();
-        System.out.println("Response Code: " + responseCode);
+        log.info("Response Code: {}", responseCode);
 
         InputStream responseStream = (responseCode < HttpURLConnection.HTTP_BAD_REQUEST)
                 ? conn.getInputStream()
@@ -112,11 +115,11 @@ public class TelegramAPI {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(responseStream))) {
             String line;
             while ((line = in.readLine()) != null) {
-                System.out.println(line);
+                log.info(line);
             }
         }
 
-        System.out.println("Sent JSON: " + jsonPayload);
+        log.info("Sent JSON: {}", jsonPayload);
     }
 
     public static void answerCallbackQuery(String callbackQueryId, String text, boolean showAlert) throws IOException {

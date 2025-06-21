@@ -7,6 +7,8 @@ import com.application.serves.ButtonXmlLoader;
 import com.application.serves.DBProxy;
 import com.application.serves.FileManager;
 import com.application.serves.Manager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.SQLException;
@@ -20,6 +22,7 @@ import static com.application.serves.DBProxy.addBroadcastMark;
 import static com.application.serves.DBProxy.getBroadcastMark;
 
 public class BroadcastService {
+    private static final Logger log = LoggerFactory.getLogger(BroadcastService.class);
     private static final User GLOBAL_USER = new User(-1, "GLOBAL");
     private static final String TIME_ZONE = "+3";
     private static final int HOUR_FOR_BROADCAST = 12;
@@ -39,7 +42,7 @@ public class BroadcastService {
                 sendBroadcastToAllUsers();
                 addBroadcastMark(today);
             } else {
-                Main.log("Попытка повторной рассылки");
+                log.info("Попытка повторной рассылки");
             }
         }, initialDelay, Duration.ofDays(1).toMillis(), TimeUnit.MILLISECONDS);
     }
@@ -73,11 +76,11 @@ public class BroadcastService {
                 try {
                     api.sendPhrase(user, todayPhrase);
                 } catch (IOException e) {
-                    Main.log(e.getMessage());
+                    log.error(e.getMessage());
                 }
             }
         } catch (SQLException e) {
-            Main.log(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 
@@ -96,7 +99,7 @@ public class BroadcastService {
         ButtonXmlLoader loader = new ButtonXmlLoader(FileManager.getDataFilePath("broadcastData.xml"));
         List<Button> phrases = loader.loadButtons();
         if (phrases.isEmpty()) {
-            Main.log("Не вышло загрузить фразы для рассылки");
+            log.warn("Не вышло загрузить фразы для рассылки");
             return;
         }
         Button button = phrases.getFirst();
@@ -108,7 +111,7 @@ public class BroadcastService {
             try {
                 DBProxy.insertPhrase(phrase.getText());
             } catch (SQLException e) {
-                Main.log(e.getMessage());
+                log.error(e.getMessage());
             }
         }
     }
