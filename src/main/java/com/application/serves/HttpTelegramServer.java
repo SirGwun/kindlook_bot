@@ -3,12 +3,14 @@ package com.application.serves;
 import com.application.Controller.TelegramWebhookHandler;
 import com.application.Main;
 import com.sun.net.httpserver.HttpServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.util.logging.Level;
 
 public class HttpTelegramServer extends Server {
+    private static final Logger log = LoggerFactory.getLogger(HttpTelegramServer.class);
     HttpServer server;
     int port = 8080;
     public HttpTelegramServer() {
@@ -18,12 +20,12 @@ public class HttpTelegramServer extends Server {
             server.setExecutor(null);
             start();
         } catch (IOException e) {
-            Main.log(e.toString(), Level.WARNING);
+            log.warn(e.toString());
         }
     }
 
     public void start() {
         server.start();
-        System.out.println("HTTP-сервер запущен на порту " + port);
+        log.info("HTTP-сервер запущен на порту {}", port);
     }
 }
