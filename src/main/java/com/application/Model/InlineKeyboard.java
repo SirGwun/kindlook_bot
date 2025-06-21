@@ -23,7 +23,7 @@ public class InlineKeyboard {
                 builder.append(",");
             }
             Button btn = keys.get(i);
-            builder.append(String.format("{\"text\":\"%s\",\"callback_data\":\"%s\"}", btn.getText(), btn.getId()));
+            StringBuilder append = builder.append(String.format("{\"text\":\"%s\",\"callback_data\":\"%s\"}", btn.getText(), btn.getId()));
         }
 
         builder.append("]]}}");

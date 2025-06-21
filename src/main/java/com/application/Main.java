@@ -7,6 +7,8 @@ import com.application.serves.HttpsTelegramServer;
 import com.application.serves.Manager;
 import com.application.serves.Server;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -18,6 +20,7 @@ import java.util.logging.Level;
 
 
 public class Main {
+    private static final Logger log = LoggerFactory.getLogger(Main.class);
     private static Server server;
 
     public static void main(String[] args) {
@@ -66,7 +69,7 @@ public class Main {
     }
 
     public static void log(String str) {
-        System.out.println(str);
+        log.info(str);
     }
 
     public static void log(String str, Level level) {

@@ -43,7 +43,7 @@ public class DBProxy {
         if (getUser(user.getId()) != null) {
             Main.log("Этот пользователь уже добавлен");
         } else {
-            String sql = String.format("INSERT INTO Users (id, name) VALUES (%d, '%s')", user.getId(), user.getName());
+            String sql = String.format("INSERT INTO Users (id, name) VALUES ('%d', '%s')", user.getId(), user.getName());
             try (Statement statement = conn.createStatement()) {
                 statement.executeUpdate(sql);
                 System.out.println(user);

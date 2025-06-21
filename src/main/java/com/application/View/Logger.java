@@ -8,9 +8,8 @@ import java.net.HttpURLConnection;
 import java.util.logging.Level;
 
 public class Logger {
-    public static void logResponse(HttpURLConnection conn) {
+    public static void logResponse(HttpURLConnection conn, int responseCode) {
         try {
-            int responseCode = conn.getResponseCode();
             log("Response Code: " + responseCode, Level.INFO);
 
             InputStream stream = responseCode < HttpURLConnection.HTTP_BAD_REQUEST
@@ -32,7 +31,6 @@ public class Logger {
             log("Exception while reading response: " + e, Level.WARNING);
         }
     }
-
 
     public static void log(String str) {
         System.out.println(str);

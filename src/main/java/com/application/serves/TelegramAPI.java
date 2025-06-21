@@ -5,13 +5,20 @@ import com.application.Model.InlineKeyboard;
 import com.application.Model.Phrase;
 import com.application.Model.User;
 import com.application.View.Logger;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 
 public class TelegramAPI {
     public static boolean sendPhrase(User user, Phrase phrase) throws IOException {
@@ -23,47 +30,83 @@ public class TelegramAPI {
         return true;
     }
 
-    public static void sendMessageWithImages(User user, String text, List<String> imageList) throws IOException {
-        if (imageList.isEmpty()) return;
-
-        File imageFile = FileManager.getImagePath(imageList.getFirst()).toFile();
-        if (!imageFile.exists()) {
-            throw new FileNotFoundException("Файл не найден: " + imageFile.getAbsolutePath());
+    public static void sendMessageWithImages(User user, String text, List<String> imageList) {
+        if (imageList == null || imageList.isEmpty()) {
+            Logger.log("Вызов метода sendMessageWithImages, без картинок", Level.WARNING);
+            return;
         }
 
-        String apiUrl = "https://api.telegram.org/bot" + Main.getEnvVar("TOKEN") + "/sendPhoto";
+        try {
+            List<Path> imagePaths = FileManager.getImagePaths(imageList);
+            HttpURLConnection conn = createTelegramPhotoRequest(Main.getEnvVar("TOKEN"), user, text, imagePaths);
+            int responseCode = conn.getResponseCode();
+            Logger.logResponse(conn, responseCode);
+            closeResponse(conn);
+        } catch (IOException e) {
+            Logger.log("Exception with sending imagers: " + e, Level.WARNING);
+        }
+
+    }
+
+
+    private static HttpURLConnection createTelegramPhotoRequest(String token, User user, String text, List<Path> imagePaths) throws IOException {
+        URL url = new URL("https://api.telegram.org/bot" + token + "/sendMediaGroup");
         String boundary = Long.toHexString(System.currentTimeMillis());
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(apiUrl).openConnection();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         conn.setRequestMethod("POST");
         conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 
-        try (OutputStream output = conn.getOutputStream();
-             PrintWriter writer = new PrintWriter(new OutputStreamWriter(output, StandardCharsets.UTF_8), true)) {
+        try (OutputStream out = conn.getOutputStream()) {
+            writeFormatField(out, boundary, "chat_id", String.valueOf(user.getId()));
 
-            writer.append("--").append(boundary).append("\r\n");
-            writer.append("Content-Disposition: form-data; name=\"chat_id\"\r\n\r\n");
-            writer.append(String.valueOf(user.getId())).append("\r\n");
+            String mediaNamesJson = buildMediaNamesJson(imagePaths, text, "photo");
+            writeFormatField(out, boundary, "media", mediaNamesJson);
 
-            writer.append("--").append(boundary).append("\r\n");
-            writer.append("Content-Disposition: form-data; name=\"caption\"\r\n\r\n");
-            writer.append(text).append("\r\n");
+            for (Path path : imagePaths) {
+                String mimeType = Files.probeContentType(path);
+                if (mimeType == null || !(mimeType.startsWith("image/") || mimeType.startsWith("video/"))) {
+                    throw new IllegalArgumentException("Unsupported file type for sendMediaGroup: " + path);
+                }
+                writeFilePart(out, boundary, path, mimeType);
+            }
 
-            writer.append("--").append(boundary).append("\r\n");
-            writer.append("Content-Disposition: form-data; name=\"photo\"; filename=\"")
-                    .append(imageFile.getName()).append("\"\r\n");
-            writer.append("Content-Type: image/jpeg\r\n\r\n");
-            writer.flush();
-
-            Files.copy(imageFile.toPath(), output);
-            output.flush();
-            writer.append("\r\n").flush();
-
-            writer.append("--").append(boundary).append("--\r\n").flush();
+            out.write(("--" + boundary + "--\r\n").getBytes(StandardCharsets.UTF_8));
+            out.flush();
         }
+        return conn;
+    }
 
-        Logger.logResponse(conn);
+    private static void writeFormatField(OutputStream out, String boundary, String fieldName, String value) throws IOException {
+        out.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+        out.write(("Content-Disposition: form-data; name=\"" + fieldName + "\"\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+        out.write((value + "\r\n").getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void writeFilePart(OutputStream out, String boundary, Path filePath, String mimeType) throws IOException {
+        String fileName = filePath.getFileName().toString();
+        out.write(("--" + boundary + "\r\n").getBytes(StandardCharsets.UTF_8));
+        out.write(("Content-Disposition: form-data; name=\"media[]\"; filename=\"" + fileName + "\"\r\n").getBytes(StandardCharsets.UTF_8));
+        out.write(("Content-Type: " + mimeType + "\r\n\r\n").getBytes(StandardCharsets.UTF_8));
+        Files.copy(filePath, out);
+        out.write("\r\n".getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static String buildMediaNamesJson(List<Path> mediaFileList, String text, String mediaType) throws JsonProcessingException {
+        List<Map<String, Object>> mediaList = new ArrayList<>();
+
+        for (int i = 0; i < mediaFileList.size(); i++) {
+            String fileName = mediaFileList.get(i).getFileName().toString();
+            Map<String, Object> item = new HashMap<>();
+            item.put("type", mediaType);
+            item.put("media", "attach://" + fileName);
+            if (i == 0 && text != null && !text.isEmpty()) {
+                item.put("caption", text);
+            }
+            mediaList.add(item);
+        }
+        return new ObjectMapper().writeValueAsString(mediaList);
     }
 
     public static void sendMessage(User user, String text) throws IOException {
@@ -122,5 +165,29 @@ public class TelegramAPI {
             }
             """, callbackQueryId, text, showAlert);
         sendJson(apiUrl, jsonPayload);
+    }
+
+    private static void closeResponse(HttpURLConnection conn) {
+        InputStream responseStream = null;
+        try {
+            int responseCode = conn.getResponseCode();
+            if (responseCode >= 200 && responseCode < 400) {
+                responseStream = conn.getInputStream();
+            } else {
+                responseStream = conn.getErrorStream();
+            }
+            if (responseStream != null) {
+                byte[] buffer = new byte[1024];
+                while (responseStream.read(buffer) != -1) { }
+            }
+        } catch (IOException ignored) {
+            // Можно логировать, если нужно
+        } finally {
+            if (responseStream != null) {
+                try {
+                    responseStream.close();
+                } catch (IOException ignored) { }
+            }
+        }
     }
 }
