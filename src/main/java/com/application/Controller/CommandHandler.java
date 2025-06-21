@@ -7,11 +7,14 @@ import com.application.serves.DBProxy;
 import com.application.serves.Manager;
 import com.application.serves.TelegramAPI;
 import com.fasterxml.jackson.databind.JsonNode;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.sql.SQLException;
 
 public class CommandHandler {
+    private static final Logger log = LoggerFactory.getLogger(CommandHandler.class);
     public static void handle(JsonNode node) {
         String userId = node.path("message").path("chat").path("id").asText();
         String message = node.path("message").path("text").asText();
@@ -33,7 +36,7 @@ public class CommandHandler {
             }
             TelegramAPI.sendInlineKeyboard(keyboard, user);
         } catch (SQLException | IOException e) {
-            Main.log(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 

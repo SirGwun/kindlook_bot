@@ -4,6 +4,8 @@ import com.application.Model.User;
 import com.application.serves.DBProxy;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 
@@ -14,13 +16,14 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 public class TelegramWebhookHandler implements HttpHandler {
+    private static final Logger log = LoggerFactory.getLogger(TelegramWebhookHandler.class);
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
-        System.out.println("== Получен запрос ==");
-        System.out.println("Метод: " + exchange.getRequestMethod());
-        System.out.println("URI: " + exchange.getRequestURI());
+        log.info("== Получен запрос ==");
+        log.info("Метод: {}", exchange.getRequestMethod());
+        log.info("URI: {}", exchange.getRequestURI());
         if (!"POST".equals(exchange.getRequestMethod())) {
             exchange.sendResponseHeaders(405, -1);
             return;
@@ -35,10 +38,10 @@ public class TelegramWebhookHandler implements HttpHandler {
         processNode(node);
 
         try {
-            System.out.println("Пришло сообщение от: " + node.path("message").path("from").path("username").asText());
-            System.out.println(node.path("message").path("text").asText());
+            log.info("Пришло сообщение от: {}", node.path("message").path("from").path("username").asText());
+            log.info(node.path("message").path("text").asText());
         } catch (NumberFormatException e) {
-            System.out.println("Не удалось рапспарсить сообщение в отладочной вставке");
+            log.warn("Не удалось рапспарсить сообщение в отладочной вставке");
         }
 
         String response = "OK";

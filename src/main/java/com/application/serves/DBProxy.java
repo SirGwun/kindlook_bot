@@ -3,6 +3,8 @@ package com.application.serves;
 import com.application.Main;
 import com.application.Model.Phrase;
 import com.application.Model.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 import java.sql.*;
@@ -10,6 +12,7 @@ import java.time.LocalDate;
 import java.util.*;
 
 public class DBProxy {
+    private static final Logger log = LoggerFactory.getLogger(DBProxy.class);
     private static final Path path = FileManager.getDataFilePath("database.db");
     private static final String URL = "jdbc:sqlite:" + path.toString();
     private static Connection conn;
@@ -20,9 +23,9 @@ public class DBProxy {
         }
         try {
             conn = DriverManager.getConnection(URL);
-            System.out.println("Соединение с SQLite установлено.");
+            log.info("Соединение с SQLite установлено.");
         } catch (SQLException e) {
-            System.out.println(e.getMessage());
+            log.error(e.getMessage());
         }
         return conn;
     }
@@ -32,21 +35,21 @@ public class DBProxy {
         String sql = "CREATE TABLE IF NOT EXISTS Users (id INT, name VARCHAR(100))";
         try (Statement statement = conn.createStatement()) {
             statement.executeUpdate(sql);
-            System.out.println("Users table созданна");
+            log.info("Users table созданна");
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 
     public static void addUser(User user) throws SQLException {
         conn = connect();
         if (getUser(user.getId()) != null) {
-            Main.log("Этот пользователь уже добавлен");
+            log.info("Этот пользователь уже добавлен");
         } else {
             String sql = String.format("INSERT INTO Users (id, name) VALUES ('%d', '%s')", user.getId(), user.getName());
             try (Statement statement = conn.createStatement()) {
                 statement.executeUpdate(sql);
-                System.out.println(user);
+                log.info("{}", user);
             }
         }
     }
@@ -84,9 +87,9 @@ public class DBProxy {
         String sql = "CREATE TABLE IF NOT EXISTS Phrases (id INTEGER PRIMARY KEY AUTOINCREMENT, text TEXT UNIQUE)";
         try (Statement statement = conn.createStatement()) {
             statement.executeUpdate(sql);
-            System.out.println("Phrases table создана");
+            log.info("Phrases table создана");
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 
@@ -144,7 +147,7 @@ public class DBProxy {
             }
 
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
 
         return phrases;
@@ -155,9 +158,9 @@ public class DBProxy {
         String sql = "CREATE TABLE IF NOT EXISTS sentPhrases (userId INT, phraseId INT)";
         try (Statement statement = conn.createStatement()) {
             statement.executeUpdate(sql);
-            Main.log("sentPhrases table создана");
+            log.info("sentPhrases table создана");
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 
@@ -169,7 +172,7 @@ public class DBProxy {
             statement.setInt(2, phrase.getId());
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
             return false;
         }
         return true;
@@ -197,7 +200,7 @@ public class DBProxy {
             }
             statement.executeUpdate();
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
     }
 
@@ -218,7 +221,7 @@ public class DBProxy {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            log.error("", e);
         }
         return ids;
     }
@@ -228,9 +231,9 @@ public class DBProxy {
         String sql = "CREATE TABLE IF NOT EXISTS broadcasts (date TEXT PRIMARY KEY)";
         try (Statement statement = conn.createStatement()) {
             statement.executeUpdate(sql);
-            Main.log("broadcasts table создана");
+            log.info("broadcasts table создана");
         } catch (SQLException e) {
-            Main.log(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 
@@ -241,7 +244,7 @@ public class DBProxy {
             statement.setString(1, date.toString());
             statement.executeUpdate();
         } catch (SQLException e) {
-            Main.log(e.getMessage());
+            log.error(e.getMessage());
         }
     }
 
@@ -254,7 +257,7 @@ public class DBProxy {
                 return rs.next();
             }
         } catch (SQLException e) {
-            Main.log(e.getMessage());
+            log.error(e.getMessage());
         }
         return false;
     }

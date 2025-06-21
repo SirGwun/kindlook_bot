@@ -5,6 +5,8 @@ import com.application.Main;
 import com.sun.net.httpserver.HttpsConfigurator;
 import com.sun.net.httpserver.HttpsParameters;
 import com.sun.net.httpserver.HttpsServer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
@@ -17,6 +19,7 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class HttpsTelegramServer extends Server {
+    private static final Logger log = LoggerFactory.getLogger(HttpsTelegramServer.class);
     int port = 8080;
     HttpsServer server;
 
@@ -39,7 +42,7 @@ public class HttpsTelegramServer extends Server {
             @Override
             public void configure(HttpsParameters params) {
                 try {
-                    System.out.println("Настройка HTTPS-параметров");
+                    log.info("Настройка HTTPS-параметров");
                     SSLContext context = getSSLContext();
                     SSLEngine engine = context.createSSLEngine();
                     params.setNeedClientAuth(false);
@@ -47,8 +50,7 @@ public class HttpsTelegramServer extends Server {
                     params.setProtocols(engine.getEnabledProtocols());
                     params.setSSLParameters(context.getDefaultSSLParameters());
                 } catch (Exception e) {
-                    System.err.println("Ошибка конфигурации HTTPS: " + e.getMessage());
-                    e.printStackTrace();
+                    log.error("Ошибка конфигурации HTTPS: {}", e.getMessage(), e);
                 }
             }
         });
@@ -60,6 +62,6 @@ public class HttpsTelegramServer extends Server {
     @Override
     public void start() {
         server.start();
-        System.out.println("HTTPS Сервер запущен на порту " + port);
+        log.info("HTTPS Сервер запущен на порту {}", port);
     }
 }
